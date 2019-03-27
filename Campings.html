@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <title>Campings de Cataluña</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%
+    }
+
+    #menu {
+      background: #fff;
+      position: absolute;
+      z-index: 1;
+      top: 50px;
+      left: 0px;
+      border-radius: 3px;
+      width: 200px;
+      border: 1px solid rgba(0, 0, 0, 0.4);
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    #menu a {
+      font-size: 12px;
+      color: #404040;
+      display: block;
+      margin: 0;
+      padding: 0;
+      padding: 6px;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+
+    #menu a:last-child {
+      border: none;
+    }
+
+    #menu a:hover {
+      background-color: #f8f8f8;
+      color: #404040;
+    }
+
+    #menu a.active {
+      background-color: #d3992c;
+      color: #ffffff;
+    }
+
+    #menu a.active:hover {
+      background: #966300;
+    }
+
+    .legend {
+      background-color: #ffffff;
+      border-radius: 3px;
+      bottom: 170px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      padding: 10px;
+      position: absolute;
+      right: 10px;
+      z-index: 1;
+    }
+
+    .legend h4 {
+      margin: 0 0 10px;
+    }
+
+    .legend p {
+      margin-left: 30px;
+      position: absolute;
+      display: block;
+      top: 0;
+    }
+
+    .legend div {
+      position: relative;
+    }
+
+    .legend div span {
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+      opacity: 0.8;
+      background-color: #d49a66;
+    }
+
+    .map-overlay {
+      font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      position: absolute;
+      width: 25%;
+      bottom: 30px;
+      right: 0;
+      padding: 10px;
+      z-index: 100;
+      color: #7d673f
+    }
+
+    .map-overlay .map-overlay-inner {
+      background-color: #fcd181;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.20);
+      border-radius: 3px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .map-overlay input {
+      background-color: transparent;
+      display: inline-block;
+      width: 100%;
+      position: relative;
+      margin: 0;
+      cursor: ew-resize;
+    }
+
+    p {
+      font-size: 12px;
+      margin: 0px;
+      text-align: left;
+    }
+
+    .header {
+      position: relative;
+      height: 50px;
+      background-color: #d3992c;
+    }
+
+    .titulo {
+      font-family: Verdana;
+      font-size: 24px;
+      text-align: center;
+      color: #ffffff;
+      font-weight: bold;
+      padding-top: 10px;
+    }
+  </style>
+  <nav id="menu"></nav>
+
+  <script
+    src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
+  <link rel='stylesheet'
+    href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css'
+    type='text/css' />
+
+
+  <script>
+    $(document).ready(function () {
+
+      var categoria = ["1a", "2a", "3a"];
+      var colorCategoria = ['#fc4b00', '#3c21ff', '#920f5c'];
+
+      mapboxgl.accessToken = 'pk.eyJ1IjoiZXN0ZWZ5MjciLCJhIjoiY2pjamdtNWUyMjU3ZDJ3cGFjaDY1eHV6NiJ9.b9KVVGV--E9OseOSSNQw1w';
+      var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/estefy27/cjsjeikv453v01fruyxer41pf',
+        center: [1.925, 41.817],
+        zoom: 7,
+        hash: true,
+        pitch: 0
+      });
+      map.addControl(new mapboxgl.NavigationControl());
+
+      map.on('load', function () {
+        map.addSource("campings_source", {
+          type: "vector",
+          url: "mapbox://estefy27.4dproieh"
+
+        });
+
+        map.addLayer({
+          id: "campings",
+          type: "circle",
+          source: "campings_source",
+          'source-layer': "datoscampings4326-5wcafr",
+          layout: { 'visibility': 'visible' },
+          paint: {
+            'circle-radius': 8,
+            'circle-color': {
+              property: "CATEGORIA",
+              type: 'categorical',
+              stops: [
+                [categoria[0], colorCategoria[0]],
+                [categoria[1], colorCategoria[1]],
+                [categoria[2], colorCategoria[2]],
+              ]
+            },
+            'circle-opacity': 1
+          }
+
+          , filter: ['==', 'CATEGORIA', categoria[0]]
+        });
+
+
+        creaLeyenda();
+
+        $('#slider').on('change', function (e) {
+          filtraCategorias($(this).val());
+        });
+
+
+      });
+
+      function creaLeyenda() {
+        for (i = 0; i < categoria.length; i++) {
+          jQuery('#legend').append(
+            '<div><span style="background-color:' + colorCategoria[i] + ';width:10px;height:10px;margin: 0 5px"></span>' + categoria[i] + '</div>'
+          );
+        }
+      }
+
+      function filtraCategorias(numcategoria) {
+        if (numcategoria == 3) {
+          var filters = ['!=', 'CATEGORIA', ''];
+          map.setFilter('campings', filters);
+          document.getElementById('categoriaid').textContent = 'Todos';
+
+
+        } else {
+          var filters = ['==', 'CATEGORIA', categoria[numcategoria]];
+          map.setFilter('campings', filters);
+          document.getElementById('categoriaid').textContent = categoria[numcategoria];
+        }
+      }
+
+      map.on('click', function (e) {
+        var features = map.queryRenderedFeatures(e.point, {
+          'source-layers': ["datoscampings4326-5wcafr"]
+        });
+
+        if (!features.length) {
+          return;
+        }
+
+        var feature = features[0];
+
+        var popup = new mapboxgl.Popup({
+          offset: [0, -15]
+        })
+          .setLngLat(feature.geometry.coordinates)
+          .setHTML('<h2>' + feature.properties.NOM + '</h2><p>' + feature.properties.REFERENCIA + '</p><p>' + feature.properties.ADRECA + '</p><p>' + feature.properties.CP +
+            '</p><p>' + feature.properties.TELEFON + '</p><p>Unidades de acampada: ' + feature.properties.N_UNI_ACAM + '</p><p>Precio adultos: ' + feature.properties.PREU_ADULT + ' €</p><p>Precio niños: ' + feature.properties.PREU_NEN + ' €</p><p><a href="mailto:' + feature.properties.MAIL + '"></p><p>' + feature.properties.MAIL + '</p><p><a href="' + feature.properties.WEB + '"></p><p>' + feature.properties.WEB +
+            '</p><p><img class="URL_FOTO" src="' + feature.properties.URL_FOTO + '"/></p>'
+          )
+          .setLngLat(feature.geometry.coordinates)
+          .addTo(map);
+      });
+
+
+
+      map.addControl(new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken
+      }));
+
+
+      const toggleableLayerIds2 = {
+        'DISCAPACIT': 'Accesible para personas discapacitadas',
+        'TCREDIT': 'Se acepta el pago con tarjeta',
+        'GOSSOS': 'Se admiten perros y animales pequeños',
+        'ANIMATURIS': 'Animación turísitca',
+        'ANIMAINFAN': 'Animación infantil',
+        'INTERNET': 'Servicio de internet',
+        'LLOGUERBIC': 'Alquiler de bicicletas',
+        'BUNGALOUS': 'Bungalous/mobil-home',
+        'RESTAURANT': 'Restaurante',
+        'BAR': 'Bar',
+        'SUPERMERCA': 'Supermercado',
+        'BUGADERIA': 'Lavandería',
+        'DISCOTECA': 'Discoteca',
+        'SALAJOCS': 'Sala de juegos',
+        'ZONAESPORT': 'Zona deportiva',
+        'PISCINAEXT': 'Piscina exterior',
+        'PISCICOVER': 'Piscina cubierta',
+        'PISCIINFAN': 'Piscina infantil',
+        'GIMNAS': 'Gimnasio',
+        'TENNIS': 'Pista de tenis',
+        'QTURISTICA': 'Calidad turística',
+        'QAMBIENTAL': 'Calidad ambiental',
+        'ETIQUETAEC': 'Etiqueta ecológica de la Unión Europea',
+
+      }
+      for (let key in toggleableLayerIds2) {
+        const text = toggleableLayerIds2[key]
+
+        let link = document.createElement('a');
+        link.href = '#';
+        link.className = 'active';
+        link.textContent = text;
+
+        link.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          let filter = map.getFilter('campings')
+          console.log(filter)
+          let index = filter.findIndex(item => {
+            return item.includes('CATEGORIA');
+          });
+
+          let aindex = filter.findIndex(item => {
+            return item.includes(key);
+          });
+
+          let auxFilter = index > -1 ? typeof filter[index] === 'string' ? filter.slice(index - 1, index + 2) : filter[index] : [];
+          let value = aindex > -1 ? typeof filter[aindex] === 'string' ? Math.abs(filter[aindex + 1] - 1) : Math.abs(filter[aindex][2] - 1) : 1;
+          let theFilter = ['all', auxFilter, ['==', key, value]];
+          console.log(theFilter)
+          map.setFilter('campings', theFilter);
+        };
+        let layers = document.getElementById('menu');
+        layers.appendChild(link);
+      }
+
+
+      console.log()
+      if (!features.length) {
+        return;
+      }
+
+
+    });
+
+
+
+  </script>
+</head>
+
+<body>
+
+  <div id='legend' class='legend'>
+    <h4>Categoría</h4>
+  </div>
+
+  <div class='map-overlay top'>
+    <div class='map-overlay-inner'>
+      <h2>Selector de categoría de camping</h2>
+      <label id='categoriaid'></label>
+      <input id='slider' type='range' min='0' max='3' step='1' value='0' />
+    </div>
+  </div>
+
+  <div id='map'></div>
+
+  <div class="header">
+    <p class="titulo">GeoVisor de los campings de Cataluña</p>
+  </div>
+
+</body>
+
+</html>
